@@ -20,11 +20,12 @@ from .data import (
 from .eval import (
     evaluate,
     evaluate_with_tta,
+    get_last_conv_layer,
     load_and_evaluate,
     plot_confusion_matrix,
     plot_gradcam_grid,
 )
-from .model import create_model, get_last_conv_layer
+from .model import create_model
 
 
 def generate_report(

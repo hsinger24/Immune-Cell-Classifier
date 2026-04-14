@@ -7,8 +7,10 @@ __pycache__/
 dist/
 build/
 
-# Data (too large for git)
+# Data (too large for git — match both dir and symlink forms)
+dataset-master
 dataset-master/
+dataset2-master
 dataset2-master/
 
 # Model checkpoints (too large for git)
@@ -25,3 +27,10 @@ notebooks/*_executed.ipynb
 # IDE
 .vscode/
 .idea/
+
+# Housekeeping
+logs/
+.claude/
+
+# Grad-CAM images (too large for git)
+reports/gradcam_*.png
