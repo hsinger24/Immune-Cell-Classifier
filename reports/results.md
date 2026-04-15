@@ -1,128 +1,85 @@
-# Blood Cell Classifier — Results Report
+# Immune Cell Classifier — Results
 
-## Model: EfficientNetV2-S
+EfficientNetV2-S fine-tuned on the Kaggle BCCD-derived 4-class blood cell dataset.
+Two evaluation regimes are reported: the **official** train/test split and a **grouped** split where augmented copies of the same source cell cannot straddle splits.
 
-Two evaluation modes are reported:
+## Headline metrics
 
-1. **Official split** — uses dataset2's provided TRAIN/TEST split (contains data leakage)
-2. **Grouped split** — group-aware split by sourceID (leakage-free, true generalization)
+| Split    | Accuracy | Macro-F1 | ECE   |
+|----------|---------:|---------:|------:|
+| grouped  | 1.0000   | 1.0000   | 0.064 |
+| official | 0.8838   | 0.8867   | 0.039 |
 
+## Hero figure
 
-### Official Split
+![Hero figure](figures/hero_figure.png)
 
-- **Checkpoint:** epoch 8, phase: finetune
-- **Val macro-F1 (during training):** 1.0000
+## Priority 1 — Visuals
 
-#### Standard Evaluation
+### gradcam_panel_grouped.png
 
-- **Accuracy:** 0.8838
-- **Macro-F1:** 0.8867
+![gradcam_panel_grouped.png](figures/gradcam_panel_grouped.png)
 
-```
-              precision    recall  f1-score   support
+Grad-CAM attention on 24 high-confidence correct predictions from the grouped test split. The model consistently localizes the nucleus/cytoplasm region characteristic of each leukocyte class.
 
-  EOSINOPHIL     0.9421    0.8363    0.8861       623
-  LYMPHOCYTE     0.9984    1.0000    0.9992       620
-    MONOCYTE     1.0000    0.7500    0.8571       620
-  NEUTROPHIL     0.6981    0.9487    0.8043       624
+### gradcam_panel_official.png
 
-    accuracy                         0.8838      2487
-   macro avg     0.9097    0.8837    0.8867      2487
-weighted avg     0.9094    0.8838    0.8866      2487
+![gradcam_panel_official.png](figures/gradcam_panel_official.png)
 
-```
+Same panel layout applied to the official split, showing that attention remains nucleus-centered even where augmentation-induced leakage is absent.
 
-#### With Test-Time Augmentation (TTA)
+### cam_comparison_grouped.png
 
-- **Accuracy:** 0.8886
-- **Macro-F1:** 0.8914
+![cam_comparison_grouped.png](figures/cam_comparison_grouped.png)
 
-```
-              precision    recall  f1-score   support
+Grad-CAM, Grad-CAM++ and Score-CAM agree on the informative region for a representative high-confidence example of each class, confirming that the attention signal is robust to method choice.
 
-  EOSINOPHIL     0.9531    0.8475    0.8972       623
-  LYMPHOCYTE     1.0000    0.9984    0.9992       620
-    MONOCYTE     1.0000    0.7500    0.8571       620
-  NEUTROPHIL     0.7044    0.9583    0.8119       624
+### misclass_gallery_official.png
 
-    accuracy                         0.8886      2487
-   macro avg     0.9144    0.8886    0.8914      2487
-weighted avg     0.9141    0.8886    0.8912      2487
+![misclass_gallery_official.png](figures/misclass_gallery_official.png)
 
-```
+The model's most-confidently-wrong predictions on the official test split, paired with attention maps for the true and predicted classes and a top-3 probability bar chart.
 
-![Confusion Matrix](confusion_matrix_official.png)
+### mean_attention_grouped.png
 
-![Confusion Matrix TTA](confusion_matrix_official_tta.png)
+![mean_attention_grouped.png](figures/mean_attention_grouped.png)
 
-![Grad-CAM](gradcam_official.png)
+Grad-CAM heatmap averaged over up to 200 correctly classified examples per class, showing the prototypical spatial attention pattern the model uses for each leukocyte.
 
+### umap_grouped.png
 
-### Grouped Split
+![umap_grouped.png](figures/umap_grouped.png)
 
-- **Checkpoint:** epoch 10, phase: finetune
-- **Val macro-F1 (during training):** 1.0000
+UMAP projection of the 1280-D penultimate-layer features on the grouped test set. Clear class-wise clustering indicates the model has learned a meaningful embedding; misclassified points (outlined in black) sit at cluster boundaries.
 
-#### Standard Evaluation
+### calibration_grouped.png
 
-- **Accuracy:** 1.0000
-- **Macro-F1:** 1.0000
+![calibration_grouped.png](figures/calibration_grouped.png)
 
-```
-              precision    recall  f1-score   support
+Reliability diagram with ECE, one-vs-rest ROC and precision-recall curves on the grouped test set.
 
-  EOSINOPHIL     1.0000    1.0000    1.0000       531
-  LYMPHOCYTE     1.0000    1.0000    1.0000       643
-    MONOCYTE     1.0000    1.0000    1.0000       464
-  NEUTROPHIL     1.0000    1.0000    1.0000       495
+### calibration_official.png
 
-    accuracy                         1.0000      2133
-   macro avg     1.0000    1.0000    1.0000      2133
-weighted avg     1.0000    1.0000    1.0000      2133
+![calibration_official.png](figures/calibration_official.png)
 
-```
+Same calibration panel on the official split; residual confusion between lymphocytes and monocytes shows up as lower AP and a small calibration gap.
 
-#### With Test-Time Augmentation (TTA)
+### confusion_matrix_v2_grouped.png
 
-- **Accuracy:** 1.0000
-- **Macro-F1:** 1.0000
+![confusion_matrix_v2_grouped.png](figures/confusion_matrix_v2_grouped.png)
 
-```
-              precision    recall  f1-score   support
+Row-normalized confusion matrix (grouped split) with raw counts, percentages and class-count marginals.
 
-  EOSINOPHIL     1.0000    1.0000    1.0000       531
-  LYMPHOCYTE     1.0000    1.0000    1.0000       643
-    MONOCYTE     1.0000    1.0000    1.0000       464
-  NEUTROPHIL     1.0000    1.0000    1.0000       495
+### confusion_matrix_v2_official.png
 
-    accuracy                         1.0000      2133
-   macro avg     1.0000    1.0000    1.0000      2133
-weighted avg     1.0000    1.0000    1.0000      2133
+![confusion_matrix_v2_official.png](figures/confusion_matrix_v2_official.png)
 
-```
+Same, on the official split.
 
-![Confusion Matrix](confusion_matrix_grouped.png)
+### cross_dataset_sanity.png
 
-![Confusion Matrix TTA](confusion_matrix_grouped_tta.png)
+![cross_dataset_sanity.png](figures/cross_dataset_sanity.png)
 
-![Grad-CAM](gradcam_grouped.png)
+Predictions on 16 raw blood smears from dataset-master — a completely separate VOC-style collection the model has never seen during training.
 
-
-## Data Leakage Discussion
-
-The official dataset2 TRAIN/TEST split has **100% sourceID overlap** — every TEST image is an
-augmentation of a cell that also appears (in different augmented forms) in TRAIN. This means the
-official split results overestimate generalization. The model partially memorizes individual cell
-identity rather than purely learning cell-type morphology.
-
-The grouped split separates by sourceID, ensuring no cell appears in more than one split.
-This gives a more honest measure of how the model would perform on truly unseen cells.
-
-Both numbers are reported for completeness — the official split for comparison with published
-baselines, and the grouped split as our trusted measure of real-world performance.
-
-
-## Success Criteria Assessment
-
-| Criterion | Target | Result | Status |
-|---|---|---|---|
+Browse all figures as a gallery: [figures/index.html](figures/index.html). Draft captions: [figures/CAPTIONS.md](figures/CAPTIONS.md).

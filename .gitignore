@@ -33,4 +33,7 @@ logs/
 .claude/
 
 # Grad-CAM images (too large for git)
-reports/gradcam_*.png
+reports/figures
+
+# PowerPoint exports (too large for git)
+*.pptx
